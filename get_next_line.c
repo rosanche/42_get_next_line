@@ -22,62 +22,64 @@ int		ft_strlen(const char *str)
 	return (i);
 }
 
-int		found_eol(char *tmp, char *rpl, char **line, char *str)
+int		found_eol(char **tmp, char *rpl, char **line, char *str)
 {
 	int i;
 	int v;
 
 	i = 0;
 	v = -1;
-	while (tmp[i] != EOL && tmp[i] != EOL)
+	while (*tmp[i] != EOL && *tmp[i] != EOL)
 		i++;
 	while (++v < i)
-		str[v] = tmp[v];
+		str[v] = *tmp[v];
 	rpl = *line;
 	*line = ft_strjoin(rpl, str);
 	free(rpl);
 	i++;
-	ft_memmove(tmp, tmp + i, ft_strlen(tmp) - i);
-	ft_memset(tmp + ft_strlen(tmp) - i, '\0', i);
+	ft_memmove(*tmp, *tmp + i, ft_strlen(*tmp) - i);
+	ft_memset(*tmp + ft_strlen(*tmp) - i, '\0', i);
 	free(str);
 	return (1);
 }
 
-int		eol_search(char **line, char *tmp, char *str)
+int		eol_search(char **line, char **tmp, char *str)
 {
 	char	*rpl;
 	int		i;
 
 	rpl = NULL;
 	i = 0;
-	if (ft_strchr(tmp, EOL))
+	if (ft_strchr(*tmp, EOL))
 		return (found_eol(tmp, rpl, line, str));
-	else if (tmp)
+	else if (*tmp)
 	{
-		i = ft_strlen(tmp);
+		i = ft_strlen(*tmp);
 		rpl = *line;
-		*line = ft_strjoin(rpl, tmp);
+		*line = ft_strjoin(rpl, *tmp);
 		free(rpl);
-		ft_memset(tmp, '\0', BUFFER_SIZE);
+		ft_memset(*tmp, '\0', BUFFER_SIZE);
 	}
 	return (0);
 }
 
-int		return_result(char **line, char *tmp, char *str, const int fd)
+int		return_result(char **line, char **tmp, char *str, const int fd)
 {
 	int	res;
 
-	while ((res = read(fd, (void *)tmp, BUFFER_SIZE)) > 0)
+	while ((res = read(fd, (void *)*tmp, BUFFER_SIZE)) > 0)
 	{
 		if (eol_search(line, tmp, str))
 			return (1);
 	}
 	if (!line && res == 0)
 		return (-1);
-	ft_memset(tmp, '\0', BUFFER_SIZE);
+	ft_memset(*tmp, '\0', BUFFER_SIZE);
 	if (res == -1)
 		return (-1);
 	free(str);
+	free (*tmp);
+	*tmp = NULL;
 	return (0);
 }
 
@@ -93,10 +95,10 @@ int		get_next_line(const int fd, char **line)
 	*line = ft_strnew(0);
 	if (tmp)
 	{
-		if (eol_search(line, tmp, str))
+		if (eol_search(line, &tmp, str))
 			return (1);
 	}
 	if (!(tmp) && !(tmp = ft_strnew(BUFFER_SIZE)))
 		return (-1);
-	return (return_result(line, tmp, str, fd));
+	return (return_result(line, &tmp, str, fd));
 }
