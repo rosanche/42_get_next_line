@@ -6,7 +6,7 @@
 /*   By: rosanche <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/03/01 10:43:39 by rosanche          #+#    #+#             */
-/*   Updated: 2019/12/03 17:43:13 by rosanche         ###   ########.fr       */
+/*   Updated: 2019/12/13 14:58:01 by rosanche         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,23 +22,23 @@ int		ft_strlen(const char *str)
 	return (i);
 }
 
-int		found_eol(char **tmp, char *rpl, char **line, char *str)
+int		found_eol(char *tmp, char *rpl, char **line, char *str)
 {
 	int i;
 	int v;
 
 	i = 0;
 	v = -1;
-	while (*tmp[i] != EOL && *tmp[i] != EOL)
+	while (tmp[i] != EOL && tmp[i] != EOL)
 		i++;
 	while (++v < i)
-		str[v] = *tmp[v];
+		str[v] = tmp[v];
 	rpl = *line;
 	*line = ft_strjoin(rpl, str);
 	free(rpl);
 	i++;
-	ft_memmove(*tmp, *tmp + i, ft_strlen(*tmp) - i);
-	ft_memset(*tmp + ft_strlen(*tmp) - i, '\0', i);
+	ft_memmove(tmp, tmp + i, ft_strlen(tmp) - i);
+	ft_memset(tmp + ft_strlen(tmp) - i, '\0', i);
 	free(str);
 	return (1);
 }
@@ -51,7 +51,7 @@ int		eol_search(char **line, char **tmp, char *str)
 	rpl = NULL;
 	i = 0;
 	if (ft_strchr(*tmp, EOL))
-		return (found_eol(tmp, rpl, line, str));
+		return (found_eol(*tmp, rpl, line, str));
 	else if (*tmp)
 	{
 		i = ft_strlen(*tmp);
@@ -72,20 +72,17 @@ int		return_result(char **line, char **tmp, char *str, const int fd)
 		if (eol_search(line, tmp, str))
 			return (1);
 	}
-	if (!line && res == 0)
-		return (-1);
-	ft_memset(*tmp, '\0', BUFFER_SIZE);
-	if (res == -1)
-		return (-1);
-	free(str);
-	free (*tmp);
+	free(*tmp);
 	*tmp = NULL;
+	free(str);
+	if ((!line && res <= 0) || res < 0)
+		return (-1);
 	return (0);
 }
 
 int		get_next_line(const int fd, char **line)
 {
-	static char *tmp;
+	static char *tmp = NULL;
 	char		*str;
 
 	if (fd < 0 || !(line) || BUFFER_SIZE <= 0)
